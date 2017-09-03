@@ -119,6 +119,27 @@ def test_main_with_list_actions(capsys, reset_logger):
     assert not os.path.exists(args[0])
 
 
+def test_main_with_file(tmpfolder):
+    # Given a pyscaffold.args file exists in the current directory,
+    tmpfolder.join("pyscaffold.args").write(
+        "--license mozilla\n"  # check multiple args per line
+        "--description 'My Project Description'\n"  # check quotes
+        "--with-pre-commit # A comment\n"  # check trailing comments
+        "--with-tox\n"
+        "# Another comment\n"  # check line comments
+        "--with-travis\n")
+    # when main is called with that file,
+    args = ["my-project", "@pyscaffold.args"]
+    cli.main(args)
+    # then extra options should be read from it
+    assert tmpfolder.join("my-project/.pre-commit-config.yaml").check()
+    assert tmpfolder.join("my-project/tox.ini").check()
+    assert tmpfolder.join("my-project/.travis.yml").check()
+    assert "Mozilla" in tmpfolder.join("my-project/LICENSE.txt").read()
+    assert ("summary = My Project Description" in
+            tmpfolder.join("my-project/setup.cfg").read())
+
+
 def test_run(tmpfolder, git_mock):  # noqa
     sys.argv = ["pyscaffold", "my-project"]
     cli.run()

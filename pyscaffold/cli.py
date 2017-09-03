@@ -7,7 +7,9 @@ from __future__ import absolute_import, print_function
 import argparse
 import logging
 import os.path
+import shlex
 import sys
+import textwrap
 
 import pyscaffold
 
@@ -23,6 +25,18 @@ from .log import (
 __author__ = "Florian Wilhelm"
 __copyright__ = "Blue Yonder"
 __license__ = "new BSD"
+
+
+class ArgumentParser(argparse.ArgumentParser):
+    """Enable writing several options in the same line for args from files.
+
+    Also supports comments starting with `#` that spans to the end of each
+    line, thanks to builtin `shlex` module.
+    """
+
+    def convert_arg_line_to_args(self, arg_line):
+        """Split string as a list of command line arguments/options."""
+        return shlex.split(arg_line, True)
 
 
 def add_default_args(parser):
@@ -140,9 +154,30 @@ def parse_args(args):
     cli_extenders = [extension.load() for extension in cli_extensions]
 
     # Create the argument parser
-    parser = argparse.ArgumentParser(
-        description="PyScaffold is a tool for easily putting up the scaffold "
-                    "of a Python project.")
+    parser = ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=textwrap.fill(
+            "PyScaffold is a tool for easily putting up the scaffold "
+            "of a Python project."),
+        fromfile_prefix_chars="@",
+        epilog=(
+            textwrap.fill(
+                "Comand line arguments can also be read from a file. "
+                "In order to do that, prefix the file name with a `@` symbol. "
+                "For example, consider a file named `pyscaffold.args` "
+                "with the following contents:") +
+            "\n\n"
+            "    --license mozilla\n"
+            "    --with-pre-commit\n"
+            "    --with-tox\n"
+            "    --with-travis\n\n"
+            "The command\n\n"
+            "    putup mypkg @pyscaffold.args\n\n" +
+            textwrap.fill(
+                "will then produce a new project configured to use tox, "
+                "pre-commit, travis and the Mozilla license.")
+            )
+       )
     parser.set_defaults(log_level="INFO", extensions=[], command=run_scaffold)
 
     for augment in cli_creators + cli_extenders:
