@@ -26,6 +26,34 @@ __author__ = "Florian Wilhelm"
 __copyright__ = "Blue Yonder"
 __license__ = "new BSD"
 
+OSX_CONFIG = '${HOME}/Library/Application Support'
+WIN_CONFIG = '${APPDATA}'
+XDG_CONFIG = '${XDG_CONFIG_HOME}'
+UNIX_CONFIG = '${HOME}/.config'
+DEFAULT_PROFILE = 'default'
+
+
+def get_config_dir():
+    """Get the path used to store config data for the user.
+    """
+    # Check for known paths in popular OSs
+    candidates = [os.path.expandvars(c)
+                  for c in (OSX_CONFIG, WIN_CONFIG, XDG_CONFIG, UNIX_CONFIG)]
+
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return os.path.join(candidate, 'pyscaffold')
+
+    # If none is found, return a default
+    return os.path.expanduser(os.path.join('~', '.pyscaffold'))
+
+
+def get_args_file(profile):
+    """Return the path to the user default arguments file.
+    """
+    return os.path.join(get_config_dir(),
+                        (profile or DEFAULT_PROFILE) + '.args')
+
 
 class ArgumentParser(argparse.ArgumentParser):
     """Enable writing several options in the same line for args from files.
@@ -162,7 +190,7 @@ def parse_args(args):
         fromfile_prefix_chars="@",
         epilog=(
             textwrap.fill(
-                "Comand line arguments can also be read from a file. "
+                "Command line arguments can be read from a file. "
                 "In order to do that, prefix the file name with a `@` symbol. "
                 "For example, consider a file named `pyscaffold.args` "
                 "with the following contents:") +
@@ -175,13 +203,33 @@ def parse_args(args):
             "    putup mypkg @pyscaffold.args\n\n" +
             textwrap.fill(
                 "will then produce a new project configured to use tox, "
-                "pre-commit, travis and the Mozilla license.")
-            )
-       )
+                "pre-commit, travis and the Mozilla license.") +
+            "\n\n" +
+            textwrap.fill(
+                "An argument file named `default.args` placed under the "
+                "`{}` directory is automatically loaded, unless the "
+                "environment variable `PYSCAFFOLD_PROFILE` is set to "
+                "'none'. Alternatively, if this variable is set to a "
+                "different name, a file corresponding to another profile "
+                "is loaded instead. It is possible, for instance, to keep a "
+                "`{}` file for personal projects and a `{}` file when working "
+                "for the {} organization, switching between then using some "
+                "kind of dotenv manager.".format(
+                    get_config_dir(), get_args_file('default'),
+                    get_args_file('mycompany'), 'My Company'))
+        )
+    )
     parser.set_defaults(log_level="INFO", extensions=[], command=run_scaffold)
 
     for augment in cli_creators + cli_extenders:
         augment(parser)
+
+    profile = os.getenv('PYSCAFFOLD_PROFILE')
+    if profile != 'none':
+        args_file = get_args_file(profile)
+        if os.path.exists(args_file):
+            args = ['@'+args_file] + args
+            # prepend default args to ensure it can be overwritten
 
     # Parse options and transform argparse Namespace object into common dict
     opts = vars(parser.parse_args(args))

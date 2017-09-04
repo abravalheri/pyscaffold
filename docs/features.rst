@@ -187,3 +187,62 @@ Also check out if :ref:`configuration options <configuration>` in
     manually remove the files ``versioneer.py`` and ``MANIFEST.in``. If you
     are updating from a version prior to 2.2, you must remove
     ``${PACKAGE}/_version.py``.
+
+
+Shared Configuration
+====================
+
+Don't repeat yourself. Instead of always passing the same arguments to the
+``putup`` command, read them from a file:
+
+.. code-block:: bash
+
+    $ echo -e "--license mozilla\n--with-tox\n--with-travis" > shared.args
+    $ putup first_project @shared.args
+    $ putup second_project @shared.args --license mit
+    #   both projects have `tox.ini` and `.travs.yml` files,
+    #   but the first project has a Mozilla license,
+    #   while the second one has a MIT license.
+
+.. note:: Rightmost command line arguments take precedence over the contents of
+    argument files.
+
+Arguments can also be automatically applied by creating a
+default arguments file. This file should be placed under a specific folder
+in your operating system:
+
+- OSX (Apple):
+  ``$HOME/Library/Application Support/pyscaffold/``
+
+- Windows:
+  ``%APPDATA%\pyscaffold\``
+
+- Unix and similar OSs (including GNU/Linux):
+  ``$HOME/.config/pyscaffold/``
+  (or ``$XDG_CONFIG_HOME/pyscaffold/`` if the XDG environment variable exists).
+
+This file is expected to be named ``default.args``, although it is possible to
+create alternate files, choosing between them with the
+``PYSCAFFOLD_PROFILE`` environment variable. For example, in a GNU/Linux system
+it is possible to do:
+
+.. code-block:: bash
+
+    $ echo "--with-tox --with-pre-commit" > ~/.config/pyscaffold/default.args
+    $ putup first_project
+    #   the created project has `tox.ini` and `.pre-commit-config.yaml` files
+    $ echo "@$HOME/.config/pyscaffold/default.args" > \
+        $HOME/.config/pyscaffold/opensource.args
+    $ echo "--with-travis -l mit" >> ~/.config/pyscaffold/opensource.args
+    $ PYSCAFFOLD_PROFILE=opensource putup second_project -l mozilla
+    #   the created project has `tox.ini`, `.pre-commit-config.yaml` and
+    #   `.travis.yml` files and a Mozilla license
+
+Similarly, to avoid using options from the default arguments file, set the
+``PYSCAFFOLD_PROFILE`` environment variable to ``none``:
+
+.. code-block:: bash
+
+    $ echo "--with-tox --with-pre-commit" > ~/.config/pyscaffold/default.args
+    $ PYSCAFFOLD_PROFILE=none putup my-project
+    #   neither `tox.ini` nor `.pre-commit-config.yaml` are created
