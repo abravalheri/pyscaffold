@@ -5,9 +5,18 @@ Release Notes
 Version 3.0, 2017-??-??
 =======================
 
-- Improved Python API thanks to extensions points
-- Updated pbr to version 3.0.1
-- Updated setuptools_scm to version 1.15.5
+- Improved Python API
+- New Extension Points API that allows third-party packages to
+  augment PyScaffold at runtime
+- Improved docs about ``cookiecutter`` integration
+- Improved logging system
+- Added ``--dry-run/--pretend`` option
+- Experimental namespace support added for updated projects
+  (now existing files are moved to the new location)
+- Added support for reading arguments from files
+- Added support for default arguments using per-user configuration files
+- Updated ``pbr`` to version 3.0.1
+- Updated ``setuptools_scm`` to version 1.15.5
 
 Version 2.5.8, 2017-??-??
 =========================
