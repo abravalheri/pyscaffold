@@ -51,7 +51,7 @@ def test_get_config_on_windows(fake_windows):
 
 @pytest.fixture
 def fake_unix(fake_home, monkeypatch):
-    monkeypatch.delenv('XDG_CONFIG_HOME')
+    monkeypatch.delenv('XDG_CONFIG_HOME', raising=False)
     fake_home.ensure_dir('.config')
     yield
 
@@ -63,8 +63,8 @@ def test_get_config_on_unix(fake_unix):
 
 @pytest.fixture
 def fake_unknown_os(fake_home, monkeypatch):
-    monkeypatch.delenv('HOME')
-    monkeypatch.delenv('XDG_CONFIG_HOME')
+    monkeypatch.delenv('HOME', raising=False)
+    monkeypatch.delenv('XDG_CONFIG_HOME', raising=False)
     monkeypatch.setattr('os.path.expanduser',
                         lambda x: x.replace('~', str(fake_home)))
     yield
