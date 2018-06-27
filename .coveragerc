@@ -1,12 +1,18 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = */pyscaffold/*
+source = src
 omit =
     */PyScaffold*.egg/*
     */pyscaffold/contrib/*
-    /tmp
+    /tmp/*
+parallel = true
 
+[paths]
+# Unify reports from tox virtualenvs
+source =
+    src/pyscaffold
+    */site-packages/pyscaffold
 
 [report]
 # Regexes for lines to exclude from consideration
