@@ -62,7 +62,7 @@ addopts = tests
 # e.g. --cov-report html (or xml) for html/xml output or --junitxml junit.xml
 # in order to write a coverage file that can be read by Jenkins.
 addopts =
-    --cov ${root_pkg} --cov-report term-missing
+    --cov --cov-config=.coveragerc --cov-report=term-missing
     --verbose
 norecursedirs =
     dist

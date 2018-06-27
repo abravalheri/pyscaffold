@@ -1,8 +1,15 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = */${package}/*
+source = src
 # omit = bad_file.py
+parallel = true
+
+[paths]
+# Unify reports from tox virtualenvs
+source =
+    src/
+    */site-packages/
 
 [report]
 # Regexes for lines to exclude from consideration
